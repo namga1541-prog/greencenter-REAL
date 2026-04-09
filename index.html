@@ -1101,7 +1101,6 @@ function openWorkEdit(wIdx, dIdx) {
       ${isMobile ? '' : `<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">${m.role}</span>`}
     </label>`).join('');
 
-  const isMobile = window.innerWidth <= 768;
   const sheetStyle = isMobile
     ? 'position:fixed;bottom:0;left:0;right:0;border-radius:18px 18px 0 0;padding:20px 16px 32px;max-height:88vh;overflow-y:auto;background:var(--surface);box-shadow:0 -4px 24px rgba(0,0,0,0.15);'
     : 'background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
