@@ -177,7 +177,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .person-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 .person-tab { font-size: 12px; padding: 5px 14px; border: 1px solid var(--border-md); border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
 .person-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.cert-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 14px; }
+.cert-cards { display: flex; flex-direction: column; gap: 8px; }
 .cert-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
 .cert-card-header { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
 .cert-person-name { font-size: 14px; font-weight: 700; }
@@ -265,90 +265,126 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .weekly-badge { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; }
 
 /* ── RESPONSIVE ── */
-@media(max-width: 768px) {
-  .summary-grid { grid-template-columns: repeat(2,1fr); }
-  .tbm-layout { grid-template-columns: 1fr; }
-  .report-layout { grid-template-columns: 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
-  .cert-cards { grid-template-columns: 1fr; }
-  .page { padding: 12px; }
-  .nav { padding: 0 12px; height: 50px; }
+/* ── 반응형 기본 클래스 ── */
+.safety-10-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
 
-  /* 카디날 룰: 가로 스크롤로 전환 */
+/* ════════════════════════
+   태블릿 (769px ~ 1024px)
+════════════════════════ */
+@media(max-width: 1024px) {
+  .page { max-width: 100%; padding: 20px 16px; }
+  .cert-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ════════════════════════
+   모바일 (~ 768px)
+════════════════════════ */
+@media(max-width: 768px) {
+
+  /* ── 기본 레이아웃 ── */
+  body { font-size: 13px; }
+  .page { padding: 12px 10px 80px; }
+  .page-header { margin-bottom: 12px; }
+  .page-title { font-size: 17px !important; }
+  .page-sub { font-size: 11px !important; }
+  .card { padding: 12px !important; }
+  .card-title { font-size: 11px !important; margin-bottom: 10px !important; }
+
+  /* ── 네비게이션 ── */
+  .nav { padding: 0 10px; height: 46px; }
+  .nav-logo { font-size: 13px !important; margin-right: 12px; }
+  .nav-tab { padding: 6px 10px !important; font-size: 12px !important; }
+  .nav-date { display: none; }
+
+  /* ── 요약 지표 ── */
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .metric { padding: 10px 12px !important; }
+  .metric-value { font-size: 20px !important; }
+  .metric-label { font-size: 10px !important; }
+
+  /* ── 카디날 룰 (가로 스크롤) ── */
   #cardinal-rules {
     display: flex !important;
     overflow-x: auto !important;
-    gap: 10px !important;
-    padding-bottom: 8px;
+    gap: 8px !important;
+    padding-bottom: 6px;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  #cardinal-rules::-webkit-scrollbar { display: none; }
   #cardinal-rules > * {
-    min-width: 150px !important;
-    flex-shrink: 0;
+    min-width: 130px !important;
+    flex-shrink: 0 !important;
     scroll-snap-align: start;
   }
 
-  /* 주간 작업 일정: 세로 카드 스택 */
+  /* ── 환경안전 10계명 ── */
+  .safety-10-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* ── 작업일정 ── */
   .work-week-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 10px !important;
-  }
-  .work-day-col {
-    min-width: unset !important;
-    width: 100% !important;
-  }
-  .work-day-header {
-    font-size: 14px !important;
-    padding: 8px 12px !important;
-  }
-  .work-task-item {
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-    line-height: 1.6 !important;
-  }
-  .work-task-tag {
-    font-size: 11px !important;
-    white-space: normal !important;
-  }
-
-  /* 안전 5단계: 2+3 줄바꿈 */
-  .safety-steps {
-    grid-template-columns: repeat(3, 1fr) !important;
-    padding: 12px !important;
     gap: 8px !important;
   }
-  .safety-step-text { font-size: 12px !important; }
-  .safety-main-title { font-size: 15px !important; }
+  .work-day-col { width: 100% !important; min-width: unset !important; }
+  .work-day-header { padding: 8px 10px !important; }
+  .work-task-item { font-size: 12px !important; line-height: 1.5 !important; }
+  .work-task-tag { font-size: 10px !important; white-space: normal !important; }
 
-  /* 인증 만료 임박 카드 전체 너비 */
-  #page-dashboard > div:last-child {
-    grid-template-columns: 1fr !important;
+  /* ── 활동수칙 ── */
+  .safety-steps {
+    grid-template-columns: repeat(3, 1fr) !important;
+    padding: 10px !important;
+    gap: 6px !important;
   }
+  .safety-step-text { font-size: 10px !important; }
+  .safety-main-title { font-size: 13px !important; }
 
-  /* 인증 카드 행 글자 크기 */
-  .cert-row { font-size: 13px !important; padding: 9px 14px !important; }
-  .cert-name-main { font-size: 13px !important; }
-  .cert-name-sub { font-size: 12px !important; }
+  /* ── 인증관리 ── */
+  .cert-cards { display: block !important; }
+  .cert-row { font-size: 12px !important; padding: 8px 12px !important; }
+  .cert-name-main { font-size: 12px !important; }
+  .cert-name-sub { font-size: 11px !important; }
+  .cert-date-small { font-size: 10px !important; }
 
-  /* 참석자 그리드 단일 컬럼 */
+  /* ── 필터/탭 버튼 ── */
+  .filter-bar { gap: 5px; flex-wrap: wrap; }
+  .filter-btn { font-size: 11px !important; padding: 5px 9px !important; }
+  .person-tabs { gap: 5px !important; }
+  .person-tab { font-size: 11px !important; padding: 5px 10px !important; }
+
+  /* ── 배지 ── */
+  .badge { font-size: 10px !important; padding: 2px 6px !important; }
+
+  /* ── TBM ── */
+  .tbm-layout { grid-template-columns: 1fr; }
+  .report-layout { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .check-item { padding: 8px 10px !important; }
+  .check-item label { font-size: 13px !important; }
   .attendee-grid { grid-template-columns: 1fr 1fr !important; }
+  .attendee-item { padding: 7px 10px !important; font-size: 12px !important; }
 
-  /* 네비게이션 탭 터치 영역 확대 */
-  .nav-tab { padding: 8px 14px !important; font-size: 14px !important; }
-
-  /* 필터 버튼 크기 */
-  .filter-btn, .person-tab { font-size: 12px !important; padding: 6px 14px !important; }
-
-  /* 배지 */
-  .badge { font-size: 11px !important; padding: 4px 9px !important; }
-
-  /* 체크리스트 */
-  .check-item label { font-size: 14px !important; }
-
-  /* 카드 패딩 */
-  .card { padding: 14px 14px !important; }
+  /* ── 모달 ── */
+  #cert-edit-modal > div,
+  #work-edit-modal > div {
+    padding: 16px 14px !important;
+    max-height: 92vh !important;
+    border-radius: 14px !important;
+  }
 }
 </style>
 </head>
@@ -363,6 +399,29 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   </div>
   <div class="nav-date" id="nav-date"></div>
 </nav>
+
+<!-- 모바일 하단 탭바 -->
+<nav id="mobile-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--surface);border-top:1px solid var(--border);z-index:1000;display:grid;grid-template-columns:1fr 1fr;">
+  <button id="mbn-dashboard" onclick="showPage('dashboard')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--accent);">
+    <span style="font-size:20px;">🏠</span>
+    <span style="font-size:10px;font-family:var(--mono);font-weight:600;color:var(--accent);">대시보드</span>
+  </button>
+  <button id="mbn-cert" onclick="showPage('cert')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);">
+    <span style="font-size:20px;">📋</span>
+    <span style="font-size:10px;font-family:var(--mono);font-weight:600;color:var(--text-muted);">인증관리</span>
+  </button>
+</nav>
+
+<script>
+// 모바일 하단 탭바 표시 여부
+function updateBottomNav() {
+  const nav = document.getElementById('mobile-bottom-nav');
+  if (!nav) return;
+  nav.style.display = window.innerWidth <= 768 ? 'grid' : 'none';
+}
+updateBottomNav();
+window.addEventListener('resize', updateBottomNav);
+</script>
 
 <!-- ════════════ DASHBOARD ════════════ -->
 <div class="page active" id="page-dashboard">
@@ -392,7 +451,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   <!-- 환경안전 10계명 -->
   <div style="margin-bottom:16px;" class="card">
     <div class="card-title">🛡️ 환경안전 10계명</div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px;">
+    <div class="safety-10-grid" style="margin-top:10px;">
       <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;">
         <span style="font-size:22px;min-width:28px;text-align:center;">🎯</span>
         <div><span style="font-size:11px;font-weight:700;color:#1976d2;">① </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">모든 사고는 예방할 수 있다.</span></div>
@@ -616,6 +675,23 @@ function showPage(id) {
   if (id === 'dashboard') renderDashboard();
   if (id === 'cert') renderCert();
   if (id === 'tbm') renderTBMHistory();
+
+  // 하단 탭바 활성화 상태 업데이트
+  ['dashboard','cert'].forEach(tab => {
+    const btn = document.getElementById('mbn-' + tab);
+    if (!btn) return;
+    const icon = btn.querySelector('span:first-child');
+    const label = btn.querySelector('span:last-child');
+    if (tab === id) {
+      label.style.color = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+    } else {
+      label.style.color = 'var(--text-muted)';
+      btn.style.color = 'var(--text-muted)';
+    }
+  });
+
+  window.scrollTo(0, 0);
 }
 
 /* ══════════ UTILS ══════════ */
@@ -938,13 +1014,67 @@ function renderWeekTable() {
     }).join('')}
     </div>`;
 
-  el.innerHTML = WORK_SCHEDULE.map((week, i) => `
-    <div style="margin-bottom:${i < WORK_SCHEDULE.length-1 ? '16px' : '0'}">
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.04em;">
-        ${i+1}주차 · ${week[0].date.slice(5)} ~ ${week[4].date.slice(5)}
+  // 이번 주 + 다음 주 → 바로 표시 / 나머지 → 접혀있음
+  const allFutureWeeks = WORK_SCHEDULE.filter(week => {
+    const weekEnd = week[week.length - 1].date;
+    return weekEnd >= todayStr;
+  });
+
+  if (!allFutureWeeks.length) {
+    el.innerHTML = '<div style="color:var(--text-dim);font-size:12px;padding:16px 0;text-align:center;">등록된 일정이 없습니다</div>';
+    return;
+  }
+
+  const visibleWeeks = allFutureWeeks.slice(0, 2);   // 이번 주 + 다음 주
+  const hiddenWeeks  = allFutureWeeks.slice(2);       // 다다음 주 이후
+
+  const visibleHtml = visibleWeeks.map((week, i) => {
+    const label = i === 0 ? '이번 주' : '다음 주';
+    return `
+    <div style="margin-bottom:16px;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;letter-spacing:0.04em;font-weight:600;">
+        ${label} · ${week[0].date.slice(5)} ~ ${week[week.length-1].date.slice(5)}
       </div>
-      ${renderWeek(week, i)}
-    </div>`).join('');
+      ${renderWeek(week, WORK_SCHEDULE.indexOf(week))}
+    </div>`;
+  }).join('');
+
+  let hiddenHtml = '';
+  if (hiddenWeeks.length) {
+    const hiddenContent = hiddenWeeks.map((week, i) => {
+      const wLabel = `+${i+1}주 후 · ${week[0].date.slice(5)} ~ ${week[week.length-1].date.slice(5)}`;
+      return `
+      <div style="margin-bottom:12px;">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.04em;">
+          ${wLabel}
+        </div>
+        ${renderWeek(week, WORK_SCHEDULE.indexOf(week))}
+      </div>`;
+    }).join('');
+
+    hiddenHtml = `
+    <div style="margin-top:4px;">
+      <button onclick="toggleFutureWeeks(this)" style="width:100%;padding:9px;border:1px dashed var(--border-md);border-radius:8px;background:none;color:var(--text-muted);font-size:12px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span id="future-weeks-arrow" style="transition:transform 0.2s;display:inline-block;">▼</span>
+        <span id="future-weeks-label">${hiddenWeeks.length}주치 일정 더 보기</span>
+      </button>
+      <div id="future-weeks-body" style="display:none;margin-top:12px;">
+        ${hiddenContent}
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = visibleHtml + hiddenHtml;
+}
+
+function toggleFutureWeeks(btn) {
+  const body  = document.getElementById('future-weeks-body');
+  const arrow = document.getElementById('future-weeks-arrow');
+  const label = document.getElementById('future-weeks-label');
+  const isOpen = body.style.display !== 'none';
+  body.style.display  = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  label.textContent   = isOpen ? `${document.querySelectorAll('#future-weeks-body > div').length}주치 일정 더 보기` : '접기';
 }
 
 /* ══════════ 작업일정 편집 모달 ══════════ */
@@ -953,7 +1083,8 @@ function openWorkEdit(wIdx, dIdx) {
 
   const modal = document.createElement('div');
   modal.id = 'work-edit-modal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  const isMobile = window.innerWidth <= 768;
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;${isMobile ? 'align-items:flex-end;' : 'align-items:center;justify-content:center;padding:16px;'}`;
 
   const tasksHtml = d.tasks.map((t, i) => `
     <div id="we-task-row-${i}" style="display:flex;gap:6px;margin-bottom:6px;align-items:flex-start;">
@@ -961,24 +1092,50 @@ function openWorkEdit(wIdx, dIdx) {
       <button onclick="removeWorkTask(${i})" style="padding:7px 10px;border:1px solid var(--danger);border-radius:8px;background:none;color:var(--danger);font-size:13px;cursor:pointer;white-space:nowrap;">삭제</button>
     </div>`).join('');
 
+  // 연차자 체크박스 (MEMBERS 기준)
+  const currentLeave = d.leave || [];
+  const leaveHtml = MEMBERS.map(m => `
+    <label style="display:flex;align-items:center;gap:6px;padding:${isMobile ? '8px 6px' : '7px 10px'};border:1px solid var(--border-md);border-radius:8px;cursor:pointer;font-size:${isMobile ? '12px' : '13px'};background:${currentLeave.includes(m.name) ? 'var(--green-dim)' : 'var(--bg)'};" id="we-leave-label-${m.name}">
+      <input type="checkbox" id="we-leave-${m.name}" ${currentLeave.includes(m.name) ? 'checked' : ''} onchange="toggleLeaveStyle('${m.name}')" style="width:15px;height:15px;accent-color:var(--green);flex-shrink:0;">
+      <span style="font-weight:500;">${m.name}</span>
+      ${isMobile ? '' : `<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">${m.role}</span>`}
+    </label>`).join('');
+
+  const isMobile = window.innerWidth <= 768;
+  const sheetStyle = isMobile
+    ? 'position:fixed;bottom:0;left:0;right:0;border-radius:18px 18px 0 0;padding:20px 16px 32px;max-height:88vh;overflow-y:auto;background:var(--surface);box-shadow:0 -4px 24px rgba(0,0,0,0.15);'
+    : 'background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
+
   modal.innerHTML = `
-    <div style="background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="${sheetStyle}">
+      ${isMobile ? '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-md);margin:0 auto 16px;"></div>' : ''}
       <div style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text);">${d.date.slice(5)} ${d.day}요일 작업일정</div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">작업을 수정하거나 추가/삭제하세요</div>
 
-      <div id="we-task-list">${tasksHtml}</div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);font-family:var(--mono);letter-spacing:0.05em;margin-bottom:8px;">🌴 연차자</div>
+      <div style="display:grid;grid-template-columns:${isMobile ? 'repeat(3,1fr)' : '1fr 1fr'};gap:6px;margin-bottom:16px;">
+        ${leaveHtml}
+      </div>
 
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);font-family:var(--mono);letter-spacing:0.05em;margin-bottom:8px;">📋 작업 내용</div>
+      <div id="we-task-list">${tasksHtml}</div>
       <button onclick="addWorkTask()" style="width:100%;padding:9px;border:1px dashed var(--border-md);border-radius:8px;background:none;color:var(--text-muted);font-size:13px;cursor:pointer;margin-bottom:16px;">+ 작업 추가</button>
 
       <div style="display:flex;gap:8px;">
-        <button onclick="closeWorkEdit()" style="flex:1;padding:10px;border:1px solid var(--border-md);border-radius:8px;background:var(--surface);color:var(--text-muted);font-size:13px;cursor:pointer;">취소</button>
-        <button onclick="saveWorkEdit(${wIdx},${dIdx})" style="flex:2;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">저장</button>
+        <button onclick="closeWorkEdit()" style="flex:1;padding:11px;border:1px solid var(--border-md);border-radius:8px;background:var(--surface);color:var(--text-muted);font-size:13px;cursor:pointer;">취소</button>
+        <button onclick="saveWorkEdit(${wIdx},${dIdx})" style="flex:2;padding:11px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
       </div>
       <div id="we-status" style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:10px;min-height:16px;"></div>
     </div>`;
 
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if(e.target===modal) closeWorkEdit(); });
+}
+
+function toggleLeaveStyle(name) {
+  const cb = document.getElementById(`we-leave-${name}`);
+  const label = document.getElementById(`we-leave-label-${name}`);
+  label.style.background = cb.checked ? 'var(--green-dim)' : 'var(--bg)';
 }
 
 function addWorkTask() {
@@ -1008,7 +1165,14 @@ async function saveWorkEdit(wIdx, dIdx) {
   const textareas = list.querySelectorAll('textarea');
   const tasks = Array.from(textareas).map(t => t.value.trim()).filter(t => t.length > 0);
 
+  // 연차자 체크된 사람 수집
+  const leave = MEMBERS.map(m => m.name).filter(name => {
+    const cb = document.getElementById(`we-leave-${name}`);
+    return cb && cb.checked;
+  });
+
   WORK_SCHEDULE[wIdx][dIdx].tasks = tasks;
+  WORK_SCHEDULE[wIdx][dIdx].leave = leave.length > 0 ? leave : undefined;
 
   const status = document.getElementById('we-status');
   status.textContent = '저장 중...';
@@ -1019,7 +1183,7 @@ async function saveWorkEdit(wIdx, dIdx) {
   WORK_SCHEDULE.forEach((week, wi) => {
     week.forEach((day, di) => {
       day.tasks.forEach((task, ti) => {
-        rows.push([wi+1, day.date, day.day, ti+1, task]);
+        rows.push([wi+1, day.date, day.day, ti+1, task, (day.leave||[]).join(',')]);
       });
     });
   });
@@ -1154,6 +1318,10 @@ function renderCert() {
   const members = certMember === 'all' ? CERT_DATA : CERT_DATA.filter(m => m.name === certMember);
   const cards = document.getElementById('cert-cards');
   cards.innerHTML = '';
+
+  // 특정 사람 선택 시 바로 펼침, 전체 보기면 모두 접힘
+  const defaultOpen = certMember !== 'all' ? certMember : '';
+
   members.forEach(m => {
     const filtered = m.certs.filter(c => {
       const st = certStatus(c);
@@ -1166,37 +1334,70 @@ function renderCert() {
       return true;
     });
     if (!filtered.length) return;
+
+    const mIdx = CERT_DATA.indexOf(m);
+    const roleClass = m.role === '기술인' ? 'role-tech' : 'role-admin';
+    const isOpen = m.name === defaultOpen;
+
+    // 이 사람의 인증 상태 요약 (만료/경고 개수)
+    const expCount = filtered.filter(c => certStatus(c) === 'expired').length;
+    const warnCount = filtered.filter(c => certStatus(c) === 'warn').length;
+    const planCount = filtered.filter(c => certStatus(c) === 'plan').length;
+    const statusSummary = [
+      expCount ? `<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--danger-dim);color:var(--danger);font-family:var(--mono);">만료 ${expCount}</span>` : '',
+      warnCount ? `<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--warn-dim);color:var(--warn);font-family:var(--mono);">임박 ${warnCount}</span>` : '',
+      planCount ? `<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--accent-dim);color:var(--accent);font-family:var(--mono);">예정 ${planCount}</span>` : '',
+    ].filter(Boolean).join('');
+
     const card = document.createElement('div');
     card.className = 'cert-card';
-    const roleClass = m.role === '기술인' ? 'role-tech' : 'role-admin';
-    const mIdx = CERT_DATA.indexOf(m);
+    card.style.cssText = 'margin-bottom:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);';
     card.innerHTML = `
-      <div class="cert-card-header">
-        <span class="cert-person-name">${m.name}</span>
-        <span class="role-tag ${roleClass}">${m.role}</span>
+      <div class="cert-card-header" onclick="toggleCertCard('cert-body-${mIdx}')" style="cursor:pointer;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);user-select:none;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="cert-person-name">${m.name}</span>
+          <span class="role-tag ${roleClass}">${m.role}</span>
+          <div style="display:flex;gap:4px;">${statusSummary}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text-dim);">${filtered.length}개</span>
+          <span id="cert-arrow-${mIdx}" style="font-size:14px;color:var(--text-muted);transition:transform 0.2s;display:inline-block;transform:${isOpen?'rotate(180deg)':'rotate(0deg)'};">▼</span>
+        </div>
       </div>
-      <div class="cert-rows">
-        ${filtered.map(c => {
-          const main = c.cert_type || c.sub_type;
-          const sub = c.cert_type ? c.sub_type : '';
-          const st = certStatus(c);
-          const cIdx = m.certs.indexOf(c);
-          return `<div class="cert-row ${st==='expired'?'r-exp':st==='warn'?'r-warn':''}" style="cursor:pointer;" onclick="openCertEdit(${mIdx},${cIdx})">
-            <span class="req-dot ${c.required?'req':''}"></span>
-            <div>
-              <div class="cert-name-main">${main}</div>
-              ${sub?`<div class="cert-name-sub">${sub}</div>`:''}
-              ${c.plan && !c.acq_date && !c.exp_date ?`<div class="cert-name-plan">${c.plan}</div>`:''}
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              ${certBadgeHtml(c)}
-              <span style="font-size:11px;color:var(--text-dim);">✏️</span>
-            </div>
-          </div>`;
-        }).join('')}
+      <div id="cert-body-${mIdx}" style="display:${isOpen?'block':'none'};">
+        <div class="cert-rows">
+          ${filtered.map(c => {
+            const main = c.cert_type || c.sub_type;
+            const sub = c.cert_type ? c.sub_type : '';
+            const st = certStatus(c);
+            const cIdx = m.certs.indexOf(c);
+            return `<div class="cert-row ${st==='expired'?'r-exp':st==='warn'?'r-warn':''}" style="cursor:pointer;" onclick="openCertEdit(${mIdx},${cIdx})">
+              <span class="req-dot ${c.required?'req':''}"></span>
+              <div>
+                <div class="cert-name-main">${main}</div>
+                ${sub?`<div class="cert-name-sub">${sub}</div>`:''}
+                ${c.plan && !c.acq_date && !c.exp_date ?`<div class="cert-name-plan">${c.plan}</div>`:''}
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                ${certBadgeHtml(c)}
+                <span style="font-size:11px;color:var(--text-dim);">✏️</span>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>`;
     cards.appendChild(card);
   });
+}
+
+function toggleCertCard(bodyId) {
+  const body = document.getElementById(bodyId);
+  const mIdx = bodyId.replace('cert-body-', '');
+  const arrow = document.getElementById('cert-arrow-' + mIdx);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
 /* ══════════ 인증 편집 모달 ══════════ */
