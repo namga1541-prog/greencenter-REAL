@@ -1177,15 +1177,8 @@ async function saveWorkEdit(wIdx, dIdx) {
   status.textContent = '저장 중...';
   status.style.color = 'var(--text-muted)';
 
-  // Google Sheets에 작업일정 저장
-  const rows = [];
-  WORK_SCHEDULE.forEach((week, wi) => {
-    week.forEach((day, di) => {
-      day.tasks.forEach((task, ti) => {
-        rows.push([wi+1, day.date, day.day, ti+1, task, (day.leave||[]).join(',')]);
-      });
-    });
-  });
+  // Google Sheets에 작업일정 저장 (JSON 통째로 저장)
+  const rows = [['WORK_SCHEDULE_JSON', JSON.stringify(WORK_SCHEDULE)]];
 
   const ok = await gsPost('saveWorkData', rows);
   if(ok) {
@@ -1493,55 +1486,80 @@ async function loadWorkFromSheets() {
   try {
     const data = await gsGet('getWorkData');
     if (!data || data.length === 0) return;
-
-    // Sheets 날짜를 YYYY-MM-DD 형식으로 정규화
-    const normalizeDate = (val) => {
-      if (!val) return '';
-      const s = String(val).trim();
-      // 이미 YYYY-MM-DD 형식이면 그대로
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      // ISO 형식(2026-04-05T15:00:00.000Z)이면 앞 10자리만
-      if (s.includes('T')) return s.slice(0, 10);
-      // Date 객체로 변환 시도
-      const d = new Date(s);
-      if (!isNaN(d)) return d.toISOString().slice(0, 10);
-      return s;
-    };
-
-    const weekMap = {};
-    data.forEach(row => {
-      if (!row[1]) return;
-      const date = normalizeDate(row[1]);
-      const day  = String(row[2]).trim();
-      const task = String(row[4]).trim();
-      const leaveStr = row[5] ? String(row[5]).trim() : '';
-
-      if (!weekMap[date]) {
-        weekMap[date] = { date, day, tasks: [], leave: leaveStr ? leaveStr.split(',').map(s=>s.trim()).filter(Boolean) : undefined };
-      }
-      if (task) weekMap[date].tasks.push(task);
-    });
-
-    const days = Object.values(weekMap).sort((a,b) => a.date.localeCompare(b.date));
-    const newSchedule = [];
-    for (let i = 0; i < days.length; i += 5) {
-      newSchedule.push(days.slice(i, i+5));
-    }
-
-    if (newSchedule.length > 0) {
+    const jsonRow = data.find(row => String(row[0]).trim() === 'WORK_SCHEDULE_JSON');
+    if (!jsonRow || !jsonRow[1]) return;
+    const parsed = JSON.parse(String(jsonRow[1]));
+    if (Array.isArray(parsed) && parsed.length > 0) {
       WORK_SCHEDULE.length = 0;
-      newSchedule.forEach(w => WORK_SCHEDULE.push(w));
+      parsed.forEach(w => WORK_SCHEDULE.push(w));
+      // 최신 데이터 캐시 저장
+      save('gc_work_cache', parsed);
     }
   } catch(e) {
-    console.log('Sheets 불러오기 실패, 기본값 사용:', e);
+    console.log('Sheets 불러오기 실패, 캐시/기본값 사용:', e);
   }
 }
 
-// Sheets에서 데이터 불러온 후 대시보드 렌더링
-// loadWorkFromSheets().then(() => renderDashboard());
 initTBM();
 initCertTabs();
-renderDashboard();
+
+// 캐시가 있으면 즉시 표시
+const workCache = load('gc_work_cache', null);
+if (workCache && workCache.length > 0) {
+  WORK_SCHEDULE.length = 0;
+  workCache.forEach(w => WORK_SCHEDULE.push(w));
+  renderDashboard();
+  // 백그라운드에서 Sheets 최신 데이터로 조용히 업데이트
+  loadWorkFromSheets().then(() => renderWeekTable());
+} else {
+  // 캐시 없으면 로딩 표시 후 Sheets에서 불러오기
+  document.getElementById('page-dashboard').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;">
+      <div style="width:40px;height:40px;border:3px solid var(--border-md);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      <div style="font-size:14px;color:var(--text-muted);font-family:var(--mono);">데이터 불러오는 중...</div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+
+  loadWorkFromSheets().then(() => {
+    document.getElementById('page-dashboard').innerHTML = `
+    <div class="page-header">
+      <div class="page-title">그린센터팀 <span>현황판</span></div>
+      <div class="page-sub" id="dash-sub"></div>
+    </div>
+    <div id="daily-safety-card" style="margin-bottom:16px;"></div>
+    <div style="margin-bottom:16px;" class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div class="card-title" style="margin-bottom:0">🗓 주간 작업 일정</div>
+        <div style="display:flex;gap:6px;" id="report-week-btns"></div>
+      </div>
+      <div id="dash-work-schedule"></div>
+    </div>
+    <div style="margin-bottom:16px;" class="card">
+      <div class="card-title">⭐ 카디날 룰 / 5대 핵심원칙 — 중대재해 예방</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;" id="cardinal-rules"></div>
+    </div>
+    <div style="margin-bottom:16px;" class="card">
+      <div class="card-title">🛡️ 환경안전 10계명</div>
+      <div class="safety-10-grid" style="margin-top:10px;">
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🎯</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">① </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">모든 사고는 예방할 수 있다.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">📋</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">② </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">법과 기준을 지키고 그 이상을 실행하라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🔍</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">③ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">답은 현장에서 찾아라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">👁️</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">④ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">안전의 적은 위험이 아니라 무관심이다.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">📢</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑤ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">불합리와 변경점은 모두 공개하고 공유하라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🚫</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑥ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">안전이 확보되지 않으면 작업하지 마라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🔧</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑦ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">위험의 원인을 찾아 끝까지 개선하라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🤝</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑧ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">협력회사와 동료를 가족처럼 여겨라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">💡</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑨ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">끊임없이 연구하고 적용하라.</span></div></div>
+        <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8f4fd,#d0e8f7);border-left:4px solid #1976d2;border-radius:8px;padding:10px 14px;"><span style="font-size:22px;min-width:28px;text-align:center;">🏠</span><div><span style="font-size:11px;font-weight:700;color:#1976d2;">⑩ </span><span style="font-size:13px;font-weight:600;color:#1a1a2e;">자기 집보다 안전한 사업장을 만들어라.</span></div></div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;display:none;" class="card" id="cert-alert-card">
+      <div class="card-title">⚠️ 인증 만료 임박</div>
+      <div id="dash-cert-alerts"></div>
+    </div>`;
+    renderDashboard();
+  });
+}
 
 </script>
 </body>
