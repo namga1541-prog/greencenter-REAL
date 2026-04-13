@@ -1164,10 +1164,10 @@ const WORK_SCHEDULE = [
   ],
   [
     { date:'2026-04-20', day:'월', tasks:['■그린2동 탈취 6기 서포트 이설','■[고소]그린2동 Eye-body Shower 공급 공업용수 배관 설치 현장 조사(2일)'] },
-    { date:'2026-04-21', day:'화', tasks:['■[고소]그린2동 Eye-body Shower 공급 공업용수 배관 설치 현장 조사(2일)'] },
+    { date:'2026-04-21', day:'화', tasks:['■[고소]그린2동 Eye-body Shower 공급 공업용수 배관 설치 현장 조사(2일)'], training:['남재현(중량물)','배강훈(중량물)'] },
     { date:'2026-04-22', day:'수', tasks:['■[고소]그린2동 차염산 Dike측 배관 현장 조사(2일)','■그린2동 PSF 여재 교체 지게차 이동 슬로프 설치'] },
     { date:'2026-04-23', day:'목', tasks:['■[고소]그린2동 차염산 Dike측 배관 현장 조사(2일)'] },
-    { date:'2026-04-24', day:'금', tasks:['패밀리데이'] },
+    { date:'2026-04-24', day:'금', tasks:['패밀리데이'], training:['남재현(고소)','김현국(고소)','박경진(고소)','이정민(고소)'] },
   ]
 ];
 
@@ -1204,6 +1204,9 @@ function renderWeekTable() {
         </div>
         ${d.leave && d.leave.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
           <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.25);">🌴 ${d.leave.join(' · ')}</span>
+        </div>` : ''}
+        ${d.training && d.training.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.25);">📚 ${d.training.join(' · ')}</span>
         </div>` : ''}
         <div style="display:flex;flex-direction:column;gap:5px;padding:8px 10px;">
           ${d.tasks.map(t => {
