@@ -746,7 +746,14 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  event.target.classList.add('active');
+
+  // nav-tab 중 해당 id를 가진 버튼에 active 추가
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${id}'`)) {
+      t.classList.add('active');
+    }
+  });
+
   if (id === 'dashboard') renderDashboard();
   if (id === 'cert') renderCert();
   if (id === 'tbm') renderTBMHistory();
@@ -1647,7 +1654,7 @@ function openCertEdit(mIdx, cIdx) {
       <div id="ce-status" style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:10px;min-height:16px;"></div>
     </div>`;
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target===modal) closeCertEdit(); });
+  modal.addEventListener('click', e => { e.stopPropagation(); });
 }
 
 function closeCertEdit() {
