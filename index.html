@@ -1382,7 +1382,6 @@ async function saveWorkEdit(wIdx, dIdx) {
   const textareas = list.querySelectorAll('textarea');
   const tasks = Array.from(textareas).map(t => t.value.trim()).filter(t => t.length > 0);
 
-  // 연차자 체크된 사람 수집
   const leave = MEMBERS.map(m => m.name).filter(name => {
     const cb = document.getElementById(`we-leave-${name}`);
     return cb && cb.checked;
@@ -1395,19 +1394,21 @@ async function saveWorkEdit(wIdx, dIdx) {
   status.textContent = '저장 중...';
   status.style.color = 'var(--text-muted)';
 
-  // Google Sheets에 작업일정 저장 (JSON 통째로 저장)
-  const rows = [['WORK_SCHEDULE_JSON', JSON.stringify(WORK_SCHEDULE)]];
+  // localStorage 캐시 즉시 저장
+  save('gc_work_cache', WORK_SCHEDULE);
 
+  // Sheets에도 JSON으로 저장
+  const rows = [['WORK_SCHEDULE_JSON', JSON.stringify(WORK_SCHEDULE)]];
   const ok = await gsPost('saveWorkData', rows);
+
   if(ok) {
-    status.textContent = '✅ Google Sheets에 저장 완료!';
+    status.textContent = '✅ 저장 완료!';
     status.style.color = 'var(--green)';
-    setTimeout(() => { closeWorkEdit(); renderWeekTable(); }, 1000);
   } else {
-    status.textContent = '⚠️ Sheets 저장 실패 — 앱에는 반영됨';
+    status.textContent = '⚠️ Sheets 저장 실패 — 기기에는 반영됨';
     status.style.color = 'var(--warn)';
-    setTimeout(() => { closeWorkEdit(); renderWeekTable(); }, 1500);
   }
+  setTimeout(() => { closeWorkEdit(); renderWeekTable(); }, 800);
 }
 
 /* ══════════ TBM ══════════ */
@@ -1729,19 +1730,16 @@ async function loadWorkFromSheets() {
 initTBM();
 initCertTabs();
 
-// 캐시가 있으면 즉시 표시
+// localStorage 캐시 있으면 즉시 표시
 const workCache = load('gc_work_cache', null);
 if (workCache && workCache.length > 0) {
   WORK_SCHEDULE.length = 0;
   workCache.forEach(w => WORK_SCHEDULE.push(w));
-  renderDashboard();
-  // 백그라운드에서 Sheets 최신 데이터로 조용히 업데이트
-  loadWorkFromSheets().then(() => renderWeekTable());
-} else {
-  renderDashboard();
-  // 백그라운드에서 Sheets 불러오기
-  loadWorkFromSheets().then(() => renderWeekTable());
 }
+renderDashboard();
+
+// 백그라운드에서 Sheets 최신 데이터로 조용히 갱신
+loadWorkFromSheets().then(() => renderWeekTable());
 
 </script>
 </body>
