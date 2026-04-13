@@ -1703,18 +1703,26 @@ document.getElementById('dash-sub');
 async function loadWorkFromSheets() {
   try {
     const data = await gsGet('getWorkData');
+    // 데이터 없으면 코드 기본값 유지
     if (!data || data.length === 0) return;
+
+    // WORK_SCHEDULE_JSON 키가 있는 행만 신뢰
     const jsonRow = data.find(row => String(row[0]).trim() === 'WORK_SCHEDULE_JSON');
-    if (!jsonRow || !jsonRow[1]) return;
-    const parsed = JSON.parse(String(jsonRow[1]));
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      WORK_SCHEDULE.length = 0;
-      parsed.forEach(w => WORK_SCHEDULE.push(w));
-      // 최신 데이터 캐시 저장
-      save('gc_work_cache', parsed);
+
+    // 키 없으면 절대 덮어쓰지 않음 (구버전 데이터 방어)
+    if (!jsonRow || !jsonRow[1]) {
+      console.log('Sheets에 WORK_SCHEDULE_JSON 없음 — 코드 기본값 유지');
+      return;
     }
+
+    const parsed = JSON.parse(String(jsonRow[1]));
+    if (!Array.isArray(parsed) || parsed.length === 0) return;
+
+    WORK_SCHEDULE.length = 0;
+    parsed.forEach(w => WORK_SCHEDULE.push(w));
+    save('gc_work_cache', parsed);
   } catch(e) {
-    console.log('Sheets 불러오기 실패, 캐시/기본값 사용:', e);
+    console.log('Sheets 불러오기 실패, 기본값 사용:', e);
   }
 }
 
