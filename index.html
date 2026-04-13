@@ -271,6 +271,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
+.work-week-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
 
 /* ════════════════════════
    태블릿 (769px ~ 1024px)
@@ -1188,7 +1193,7 @@ function renderWeekTable() {
   const el = document.getElementById('dash-work-schedule');
 
   const renderWeek = (week, wIdx) => `
-    <div class="work-week-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+    <div class="work-week-grid">
     ${week.map((d, dIdx) => {
       const isToday = d.date === todayStr;
       const isPast = d.date < todayStr;
@@ -1202,11 +1207,11 @@ function renderWeekTable() {
           </div>
           <button onclick="openWorkEdit(${wIdx},${dIdx})" style="background:none;border:1px solid var(--border-md);border-radius:6px;padding:3px 7px;font-size:11px;color:var(--text-muted);cursor:pointer;">✏️ 편집</button>
         </div>
-        ${d.leave && d.leave.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.25);">🌴 ${d.leave.join(' · ')}</span>
+        ${d.leave && d.leave.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(5,150,105,0.1);color:#059669;border:1px solid rgba(5,150,105,0.25);display:inline-block;word-break:keep-all;white-space:normal;">🌴 ${d.leave.join(' · ')}</span>
         </div>` : ''}
-        ${d.training && d.training.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.25);">📚 ${d.training.join(' · ')}</span>
+        ${d.training && d.training.length ? `<div style="padding:5px 10px 4px;border-bottom:1px solid var(--border);">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.25);display:inline-block;word-break:keep-all;white-space:normal;">📚 ${d.training.join(' · ')}</span>
         </div>` : ''}
         <div style="display:flex;flex-direction:column;gap:5px;padding:8px 10px;">
           ${d.tasks.map(t => {
