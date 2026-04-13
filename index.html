@@ -396,12 +396,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">대시보드</button>
     <button class="nav-tab" onclick="showPage('cert')">인증관리</button>
+    <button class="nav-tab" onclick="showPage('flange')">배관 기술 자료</button>
   </div>
   <div class="nav-date" id="nav-date"></div>
 </nav>
 
 <!-- 모바일 하단 탭바 -->
-<nav id="mobile-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--surface);border-top:1px solid var(--border);z-index:1000;display:grid;grid-template-columns:1fr 1fr;">
+<nav id="mobile-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--surface);border-top:1px solid var(--border);z-index:1000;display:grid;grid-template-columns:1fr 1fr 1fr;">
   <button id="mbn-dashboard" onclick="showPage('dashboard')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--accent);">
     <span style="font-size:20px;">🏠</span>
     <span style="font-size:10px;font-family:var(--mono);font-weight:600;color:var(--accent);">대시보드</span>
@@ -409,6 +410,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
   <button id="mbn-cert" onclick="showPage('cert')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);">
     <span style="font-size:20px;">📋</span>
     <span style="font-size:10px;font-family:var(--mono);font-weight:600;color:var(--text-muted);">인증관리</span>
+  </button>
+  <button id="mbn-flange" onclick="showPage('flange')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);">
+    <span style="font-size:20px;">🔩</span>
+    <span style="font-size:10px;font-family:var(--mono);font-weight:600;color:var(--text-muted);">기술자료</span>
   </button>
 </nav>
 
@@ -578,6 +583,71 @@ window.addEventListener('resize', updateBottomNav);
   </div>
 </div>
 
+<!-- ════════════ FLANGE ════════════ -->
+<div class="page" id="page-flange">
+  <div class="page-header">
+    <div class="page-title">배관 기술 <span>자료</span></div>
+    <div class="page-sub">KS 10K 기준 · 플랜지 구경별 볼트 사이즈 / 수량 / 토크 체결 기준</div>
+  </div>
+
+  <!-- 서브 탭 -->
+  <div class="filter-bar" style="margin-bottom:16px;">
+    <button class="filter-btn active" id="ftab-torque" onclick="switchFlangeTab('torque',this)">⚙️ 토크 체결 기준</button>
+    <button class="filter-btn" id="ftab-bolt" onclick="switchFlangeTab('bolt',this)">🔩 볼트 규격</button>
+  </div>
+
+  <!-- 토크 체결 기준 (기본 표시) -->
+  <div id="flange-section-torque">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-title">⚙️ 토크 체결 기준 (N·m)</div>
+      <div style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="torque-search" oninput="renderTorqueTable()" placeholder="구경 검색 (예: 50A)" style="width:100%;padding:10px 12px;border:1px solid var(--border-md);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text);">
+        <select id="torque-type" onchange="renderTorqueTable()" style="width:100%;padding:10px 12px;border:1px solid var(--border-md);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text);">
+          <option value="all">전체 플랜지</option>
+          <option value="1">① 강관/STS FF(금속+금속)</option>
+          <option value="2">② 강관/STS PTFE링형(금속+금속)</option>
+          <option value="3">③ 강관/STS RF플랜지(금속+금속)</option>
+          <option value="4">④ 강관/STS Spiral Wound</option>
+          <option value="5">⑤ 플라스틱 FF(금속+플라스틱)</option>
+          <option value="6">⑥ PE캡조인트(금속+PE)</option>
+          <option value="7">⑦ PE캡조인트+FRP(금속+FRP)</option>
+          <option value="8">⑧ FF플랜지+PVC캡(PE캡+PVC)</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;" id="torque-table-wrap"></div>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--warn-dim);border-radius:8px;font-size:11px;color:var(--warn);font-family:var(--mono);line-height:1.7;">
+        ※ 체결기준: 최종 목표 토크 · 검사기준 최소~최대: 허용 범위 · 재조 입김: 수작업 체결 기준
+      </div>
+    </div>
+  </div>
+
+  <!-- 볼트 규격 (기본 숨김) -->
+  <div id="flange-section-bolt" style="display:none;">
+    <div class="card">
+      <div class="card-title">🔩 KS 10K 플랜지 볼트 규격표</div>
+      <div style="margin-bottom:14px;">
+        <input type="text" id="flange-search" oninput="renderFlangeTable()" placeholder="구경 검색 (예: 50A, 100)" style="width:100%;padding:9px 12px;border:1px solid var(--border-md);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);">
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:var(--surface2);">
+              <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text);border-bottom:2px solid var(--border-md);font-family:var(--mono);font-size:11px;">구경</th>
+              <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text);border-bottom:2px solid var(--border-md);font-family:var(--mono);font-size:11px;">볼트 사이즈</th>
+              <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--text);border-bottom:2px solid var(--border-md);font-family:var(--mono);font-size:11px;">수량 (1개소)</th>
+              <th style="padding:10px 16px;text-align:center;font-weight:700;color:var(--text);border-bottom:2px solid var(--border-md);font-family:var(--mono);font-size:11px;">평와셔 (SUS/일반)</th>
+            </tr>
+          </thead>
+          <tbody id="flange-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--accent-dim);border-radius:8px;font-size:11px;color:var(--accent);font-family:var(--mono);">
+        ※ 평와셔는 볼트 1개당 2개 · 앙카볼트에는 적용 안 함
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════ CERT ════════════ -->
 <div class="page" id="page-cert">
   <div class="page-header">
@@ -675,12 +745,12 @@ function showPage(id) {
   if (id === 'dashboard') renderDashboard();
   if (id === 'cert') renderCert();
   if (id === 'tbm') renderTBMHistory();
+  if (id === 'flange') renderTorqueTable();
 
   // 하단 탭바 활성화 상태 업데이트
-  ['dashboard','cert'].forEach(tab => {
+  ['dashboard','cert','flange'].forEach(tab => {
     const btn = document.getElementById('mbn-' + tab);
     if (!btn) return;
-    const icon = btn.querySelector('span:first-child');
     const label = btn.querySelector('span:last-child');
     if (tab === id) {
       label.style.color = 'var(--accent)';
@@ -692,6 +762,146 @@ function showPage(id) {
   });
 
   window.scrollTo(0, 0);
+}
+
+/* ══════════ 플랜지 볼트 ══════════ */
+const FLANGE_DATA = [
+  { size:'15A',  bolt:'M12', qty:4  },
+  { size:'20A',  bolt:'M12', qty:4  },
+  { size:'25A',  bolt:'M16', qty:4  },
+  { size:'32A',  bolt:'M16', qty:4  },
+  { size:'40A',  bolt:'M16', qty:4  },
+  { size:'50A',  bolt:'M16', qty:4  },
+  { size:'65A',  bolt:'M16', qty:4  },
+  { size:'80A',  bolt:'M16', qty:8  },
+  { size:'100A', bolt:'M16', qty:8  },
+  { size:'125A', bolt:'M20', qty:8  },
+  { size:'150A', bolt:'M20', qty:8  },
+  { size:'200A', bolt:'M20', qty:12 },
+  { size:'250A', bolt:'M22', qty:12 },
+  { size:'300A', bolt:'M22', qty:16 },
+];
+
+function renderFlangeTable() {
+  const keyword = (document.getElementById('flange-search')?.value || '').trim().toLowerCase();
+  const filtered = keyword
+    ? FLANGE_DATA.filter(r => r.size.toLowerCase().includes(keyword))
+    : FLANGE_DATA;
+
+  const tbody = document.getElementById('flange-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = filtered.map((r, i) => `
+    <tr style="border-bottom:1px solid var(--border);background:${i%2===0?'var(--surface)':'var(--surface2)'};">
+      <td style="padding:11px 16px;font-weight:700;font-family:var(--mono);color:var(--accent);">${r.size}</td>
+      <td style="padding:11px 16px;font-family:var(--mono);font-weight:600;">${r.bolt}</td>
+      <td style="padding:11px 16px;text-align:center;font-family:var(--mono);font-weight:700;font-size:15px;">${r.qty}개</td>
+      <td style="padding:11px 16px;text-align:center;font-family:var(--mono);color:var(--text-muted);">${r.qty * 2}개</td>
+    </tr>`).join('');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--text-dim);font-size:12px;">검색 결과가 없습니다</td></tr>`;
+  }
+}
+
+/* ══════════ 토크 체결 데이터 ══════════ */
+// 구조: { size, bolt, qty, torque: { type1: {std,min,max,hand}, type2: ... } }
+// type1=강관/STS FF, type2=PTFE링형, type3=RF플랜지, type4=Spiral Wound
+// type5=플라스틱FF, type6=PE캡조인트, type7=PE+FRP, type8=FF+PVC캡
+const TORQUE_DATA = [
+  { size:'15A',  bolt:'M12', qty:4,  t:[{s:30,mn:20,mx:35},{s:35,mn:31,mx:38},{s:35,mn:31,mx:38},{s:20,mn:15,mx:27},{s:20,mn:15,mx:25},{s:null},{s:null},{s:null}] },
+  { size:'20A',  bolt:'M12', qty:4,  t:[{s:30,mn:20,mx:35},{s:35,mn:34,mx:38},{s:35,mn:34,mx:38},{s:25,mn:17,mx:32},{s:20,mn:20,mx:30},{s:15,mn:8,mx:17},{s:null},{s:null}] },
+  { size:'25A',  bolt:'M16', qty:4,  t:[{s:60,mn:45,mx:70},{s:75,mn:58,mx:88},{s:75,mn:58,mx:88},{s:40,mn:26,mx:48},{s:40,mn:35,mx:45},{s:20,mn:14,mx:31},{s:20,mn:13,mx:31},{s:20,mn:8,mx:18}] },
+  { size:'32A',  bolt:'M16', qty:4,  t:[{s:65,mn:50,mx:80},{s:85,mn:70,mx:93},{s:85,mn:70,mx:93},{s:60,mn:40,mx:75},{s:45,mn:40,mx:55},{s:30,mn:19,mx:41},{s:30,mn:17,mx:41},{s:25,mn:10,mx:22}] },
+  { size:'40A',  bolt:'M16', qty:4,  t:[{s:65,mn:50,mx:80},{s:85,mn:74,mx:93},{s:85,mn:74,mx:93},{s:65,mn:44,mx:82},{s:50,mn:40,mx:55},{s:30,mn:19,mx:41},{s:30,mn:17,mx:41},{s:25,mn:11,mx:29}] },
+  { size:'50A',  bolt:'M16', qty:4,  t:[{s:75,mn:55,mx:95},{s:90,mn:87,mx:93},{s:90,mn:87,mx:93},{s:90,mn:66,mx:126},{s:60,mn:50,mx:70},{s:45,mn:25,mx:52},{s:35,mn:22,mx:55},{s:35,mn:15,mx:45}] },
+  { size:'65A',  bolt:'M16', qty:4,  t:[{s:95,mn:65,mx:110},{s:95,mn:92,mx:98},{s:95,mn:92,mx:98},{s:80,mn:95,mx:110},{s:70,mn:60,mx:90},{s:50,mn:36,mx:82},{s:40,mn:25,mx:65},{s:50,mn:22,mx:60}] },
+  { size:'80A',  bolt:'M16', qty:8,  t:[{s:50,mn:35,mx:65},{s:75,mn:49,mx:88},{s:75,mn:49,mx:88},{s:55,mn:44,mx:67},{s:40,mn:30,mx:45},{s:25,mn:14,mx:36},{s:20,mn:11,mx:36},{s:25,mn:9,mx:22}] },
+  { size:'100A', bolt:'M16', qty:8,  t:[{s:65,mn:55,mx:750},{s:80,mn:54,mx:95},{s:80,mn:54,mx:95},{s:65,mn:54,mx:73},{s:50,mn:40,mx:55},{s:30,mn:16,mx:45},{s:25,mn:14,mx:45},{s:25,mn:12,mx:32}] },
+  { size:'125A', bolt:'M20', qty:8,  t:[{s:100,mn:70,mx:120},{s:125,mn:80,mx:161},{s:125,mn:80,mx:161},{s:100,mn:85,mx:110},{s:75,mn:60,mx:85},{s:40,mn:27,mx:76},{s:40,mn:22,mx:79},{s:40,mn:21,mx:55}] },
+  { size:'150A', bolt:'M20', qty:8,  t:[{s:120,mn:80,mx:140},{s:150,mn:95,mx:184},{s:150,mn:95,mx:184},{s:115,mn:95,mx:130},{s:90,mn:75,mx:105},{s:60,mn:35,mx:102},{s:50,mn:28,mx:99},{s:60,mn:29,mx:80}] },
+  { size:'200A', bolt:'M20', qty:12, t:[{s:90,mn:70,mx:120},{s:115,mn:74,mx:145},{s:115,mn:74,mx:145},{s:90,mn:75,mx:98},{s:75,mn:60,mx:85},{s:50,mn:30,mx:69},{s:50,mn:24,mx:75},{s:50,mn:25,mx:69}] },
+  { size:'250A', bolt:'M22', qty:12, t:[{s:140,mn:100,mx:180},{s:175,mn:126,mx:217},{s:175,mn:126,mx:217},{s:120,mn:98,mx:134},{s:110,mn:95,mx:120},{s:70,mn:49,mx:103},{s:60,mn:36,mx:92},{s:60,mn:41,mx:78}] },
+  { size:'300A', bolt:'M22', qty:16, t:[{s:120,mn:80,mx:150},{s:145,mn:118,mx:168},{s:145,mn:118,mx:168},{s:105,mn:85,mx:116},{s:90,mn:75,mx:100},{s:70,mn:49,mx:100},{s:50,mn:35,mx:79},{s:60,mn:42,mx:84}] },
+];
+
+const TORQUE_TYPE_LABELS = [
+  '① 강관/STS FF플랜지\n(금속+금속)',
+  '② PTFE 링형 FF플랜지\n(금속+금속)',
+  '③ PTFE RF플랜지\n(금속+금속)',
+  '④ Spiral Wound\n(금속+금속)',
+  '⑤ 플라스틱 FF플랜지\n(금속+플라스틱)',
+  '⑥ PE캡조인트\n(금속+PE캡)',
+  '⑦ PE캡조인트+FRP\n(금속+FRP)',
+  '⑧ FF플랜지+PVC캡\n(PE캡+PVC)',
+];
+
+function switchFlangeTab(tab, btn) {
+  document.querySelectorAll('#page-flange .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('flange-section-bolt').style.display   = tab === 'bolt'   ? 'block' : 'none';
+  document.getElementById('flange-section-torque').style.display = tab === 'torque' ? 'block' : 'none';
+  if (tab === 'torque') renderTorqueTable();
+  if (tab === 'bolt')   renderFlangeTable();
+}
+
+function renderTorqueTable() {
+  const keyword  = (document.getElementById('torque-search')?.value || '').trim().toLowerCase();
+  const typeVal  = document.getElementById('torque-type')?.value || 'all';
+  const wrap     = document.getElementById('torque-table-wrap');
+  if (!wrap) return;
+
+  const filtered = keyword
+    ? TORQUE_DATA.filter(r => r.size.toLowerCase().includes(keyword))
+    : TORQUE_DATA;
+
+  const types = typeVal === 'all'
+    ? [0,1,2,3,4,5,6,7]
+    : [parseInt(typeVal)-1];
+
+  const thStyle = 'padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);border-bottom:2px solid var(--border-md);text-align:center;white-space:pre-line;line-height:1.4;';
+  const tdStyle = (i) => `padding:9px 10px;font-family:var(--mono);font-size:12px;text-align:center;border-bottom:1px solid var(--border);background:${i%2===0?'var(--surface)':'var(--surface2)'};`;
+
+  const thead = `
+    <tr style="background:var(--surface2);">
+      <th style="${thStyle}text-align:left;">구경</th>
+      <th style="${thStyle}">볼트</th>
+      <th style="${thStyle}">수량</th>
+      ${types.map(ti => `<th colspan="4" style="${thStyle}border-left:2px solid var(--border-md);">${TORQUE_TYPE_LABELS[ti]}</th>`).join('')}
+    </tr>
+    <tr style="background:var(--surface2);">
+      <th style="${thStyle}text-align:left;"></th>
+      <th style="${thStyle}"></th>
+      <th style="${thStyle}"></th>
+      ${types.map(() => `
+        <th style="${thStyle}border-left:2px solid var(--border-md);color:var(--accent);">체결기준</th>
+        <th style="${thStyle}">검사최소</th>
+        <th style="${thStyle}">검사최대</th>
+        <th style="${thStyle}color:var(--warn);">재조입김</th>
+      `).join('')}
+    </tr>`;
+
+  const tbody = filtered.map((r, i) => `
+    <tr>
+      <td style="${tdStyle(i)}font-weight:700;color:var(--accent);text-align:left;">${r.size}</td>
+      <td style="${tdStyle(i)}">${r.bolt}</td>
+      <td style="${tdStyle(i)}">${r.qty}</td>
+      ${types.map(ti => {
+        const t = r.t[ti];
+        if (!t || t.s === null) return `<td colspan="4" style="${tdStyle(i)}border-left:2px solid var(--border-md);color:var(--text-dim);" >—</td>`;
+        return `
+          <td style="${tdStyle(i)}border-left:2px solid var(--border-md);font-weight:700;color:var(--accent);">${t.s ?? '—'}</td>
+          <td style="${tdStyle(i)}">${t.mn ?? '—'}</td>
+          <td style="${tdStyle(i)}">${t.mx ?? '—'}</td>
+          <td style="${tdStyle(i)}color:var(--warn);font-weight:600;">${t.hand ?? '—'}</td>`;
+      }).join('')}
+    </tr>`).join('');
+
+  wrap.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:${types.length > 1 ? types.length*180+120 : 360}px;">
+      <thead>${thead}</thead>
+      <tbody>${tbody}</tbody>
+    </table>`;
 }
 
 /* ══════════ UTILS ══════════ */
