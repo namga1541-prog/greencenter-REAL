@@ -1346,7 +1346,7 @@ function openWorkEdit(wIdx, dIdx) {
     </div>`;
 
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target===modal) closeWorkEdit(); });
+  modal.addEventListener('click', e => { e.stopPropagation(); });
 }
 
 function toggleLeaveStyle(name) {
