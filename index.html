@@ -1720,7 +1720,20 @@ async function loadWorkFromSheets() {
 
 initTBM();
 initCertTabs();
-renderDashboard();
+
+// 캐시가 있으면 즉시 표시
+const workCache = load('gc_work_cache', null);
+if (workCache && workCache.length > 0) {
+  WORK_SCHEDULE.length = 0;
+  workCache.forEach(w => WORK_SCHEDULE.push(w));
+  renderDashboard();
+  // 백그라운드에서 Sheets 최신 데이터로 조용히 업데이트
+  loadWorkFromSheets().then(() => renderWeekTable());
+} else {
+  renderDashboard();
+  // 백그라운드에서 Sheets 불러오기
+  loadWorkFromSheets().then(() => renderWeekTable());
+}
 
 </script>
 </body>
