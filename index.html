@@ -1403,6 +1403,13 @@ async function saveWorkEdit(wIdx, dIdx) {
     return cb && cb.checked;
   });
 
+  // 방어 코드: wIdx, dIdx 유효성 확인
+  if (!WORK_SCHEDULE[wIdx] || !WORK_SCHEDULE[wIdx][dIdx]) {
+    alert('일정 데이터를 찾을 수 없습니다. 창을 닫고 다시 시도해주세요.');
+    closeWorkEdit();
+    return;
+  }
+
   WORK_SCHEDULE[wIdx][dIdx].tasks = tasks;
   WORK_SCHEDULE[wIdx][dIdx].leave = leave.length > 0 ? leave : undefined;
 
@@ -1755,7 +1762,11 @@ if (workCache && workCache.length > 0) {
 renderDashboard();
 
 // 백그라운드에서 Sheets 최신 데이터로 조용히 갱신
-loadWorkFromSheets().then(() => renderWeekTable());
+loadWorkFromSheets().then(() => {
+  // 편집 모달이 열려있으면 갱신 건너뜀
+  if (document.getElementById('work-edit-modal')) return;
+  renderWeekTable();
+});
 
 </script>
 </body>
