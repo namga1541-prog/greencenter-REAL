@@ -446,7 +446,10 @@ window.addEventListener('resize', updateBottomNav);
   <div style="margin-bottom:16px;" class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div class="card-title" style="margin-bottom:0">🗓 주간 작업 일정</div>
-      <div style="display:flex;gap:6px;" id="report-week-btns"></div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="openAddWeek()" style="padding:5px 10px;border:1px dashed var(--border-md);border-radius:6px;background:none;color:var(--text-muted);font-size:11px;font-family:var(--mono);cursor:pointer;">＋ 주차 추가</button>
+        <div style="display:flex;gap:6px;" id="report-week-btns"></div>
+      </div>
     </div>
     <div id="dash-work-schedule"></div>
   </div>
@@ -1187,6 +1190,13 @@ const WORK_SCHEDULE = [
     { date:'2026-04-29', day:'수', tasks:['■[맞대기 융착]그린2동 C, D계열 Seeding 배관 재질 개선(2일)','■[고소]그린2동 Eye-body Shower 공급 공업용수 배관 설치(2일)'] },
     { date:'2026-04-30', day:'목', tasks:['■[고소]그린2동 Eye-body Shower 공급 공업용수 배관 설치(2일)'] },
     { date:'2026-05-01', day:'금', tasks:['근로자의날'] },
+  ],
+  [
+    { date:'2026-05-04', day:'월', tasks:['전체 휴무'] },
+    { date:'2026-05-05', day:'화', tasks:['어린이날'] },
+    { date:'2026-05-06', day:'수', tasks:['■[고소, 내화학복]그린2동 Eye-body Shower 공급 공업용수 배관 보수(3일)'] },
+    { date:'2026-05-07', day:'목', tasks:['■[고소, 내화학복]그린2동 Eye-body Shower 공급 공업용수 배관 보수(3일)'] },
+    { date:'2026-05-08', day:'금', tasks:['■[고소, 내화학복]그린2동 Eye-body Shower 공급 공업용수 배관 보수(3일)'] },
   ]
 ];
 
@@ -1386,6 +1396,85 @@ function addWorkTask() {
 function removeWorkTask(i) {
   const row = document.getElementById(`we-task-row-${i}`);
   if(row) row.remove();
+}
+
+/* ══════════ 주차 추가 모달 ══════════ */
+function openAddWeek() {
+  const isMobile = window.innerWidth <= 768;
+  const modal = document.createElement('div');
+  modal.id = 'add-week-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;pointer-events:none;${isMobile ? 'align-items:flex-end;' : 'align-items:center;justify-content:center;padding:16px;'}`;
+
+  const days = ['월','화','수','목','금'];
+  const sheetStyle = isMobile
+    ? 'pointer-events:auto;position:fixed;bottom:0;left:0;right:0;border-radius:18px 18px 0 0;padding:20px 16px 32px;max-height:88vh;overflow-y:auto;background:var(--surface);box-shadow:0 -4px 24px rgba(0,0,0,0.15);'
+    : 'pointer-events:auto;background:var(--surface);border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);';
+
+  // 다음 주 월요일 자동 계산
+  const lastWeek = WORK_SCHEDULE[WORK_SCHEDULE.length - 1];
+  const lastDate = new Date(lastWeek[lastWeek.length - 1].date);
+  const nextMon = new Date(lastDate);
+  nextMon.setDate(lastDate.getDate() + (8 - lastDate.getDay()) % 7 || 7);
+
+  const weekDates = Array.from({length:5}, (_, i) => {
+    const d = new Date(nextMon);
+    d.setDate(nextMon.getDate() + i);
+    return d.toISOString().slice(0,10);
+  });
+
+  const rowsHtml = weekDates.map((date, i) => `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);font-family:var(--mono);margin-bottom:6px;">${date.slice(5)} ${days[i]}요일</div>
+      <textarea id="aw-task-${i}" style="width:100%;padding:8px 10px;border:1px solid var(--border-md);border-radius:8px;font-size:12px;background:var(--bg);color:var(--text);resize:vertical;min-height:52px;line-height:1.5;box-sizing:border-box;" placeholder="작업 내용 입력 (여러 줄 입력 가능)"></textarea>
+    </div>`).join('');
+
+  modal.innerHTML = `
+    <div style="${sheetStyle}">
+      ${isMobile ? '<div style="width:36px;height:4px;border-radius:2px;background:var(--border-md);margin:0 auto 16px;"></div>' : ''}
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text);">📅 새 주차 추가</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">${weekDates[0].slice(5)} ~ ${weekDates[4].slice(5)} 주차</div>
+      ${rowsHtml}
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="closeAddWeek()" style="flex:1;padding:11px;border:1px solid var(--border-md);border-radius:8px;background:var(--surface);color:var(--text-muted);font-size:13px;cursor:pointer;">취소</button>
+        <button onclick="saveAddWeek('${weekDates.join(',')}')" style="flex:2;padding:11px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">저장</button>
+      </div>
+      <div id="aw-status" style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:10px;min-height:16px;"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+function closeAddWeek() {
+  const m = document.getElementById('add-week-modal');
+  if(m) m.remove();
+}
+
+async function saveAddWeek(datesStr) {
+  const days = ['월','화','수','목','금'];
+  const dates = datesStr.split(',');
+  const newWeek = dates.map((date, i) => {
+    const raw = document.getElementById(`aw-task-${i}`)?.value.trim() || '';
+    const tasks = raw ? raw.split('\n').map(t => t.trim()).filter(Boolean) : [];
+    return { date, day: days[i], tasks };
+  });
+
+  WORK_SCHEDULE.push(newWeek);
+
+  const status = document.getElementById('aw-status');
+  status.textContent = '저장 중...';
+
+  save('gc_work_cache', WORK_SCHEDULE);
+  const rows = [['WORK_SCHEDULE_JSON', JSON.stringify(WORK_SCHEDULE)]];
+  const ok = await gsPost('saveWorkData', rows);
+
+  if(ok) {
+    status.textContent = '✅ 저장 완료!';
+    status.style.color = 'var(--green)';
+  } else {
+    status.textContent = '⚠️ Sheets 저장 실패 — 기기에는 반영됨';
+    status.style.color = 'var(--warn)';
+  }
+  setTimeout(() => { closeAddWeek(); renderWeekTable(); }, 800);
 }
 
 function closeWorkEdit() {
